@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="comics.css">
+    <script src="comics.js"></script>
+    <title>Comix</title>
+</head>
+<body>
+    <div class="logo">
+        <h1 class="text">Comix</h1> 
+    </div>
+
+    <div class="browse">
+        <!-- Upload Icon -->
+        <div id="uploadIcon" class="upload-icon" onclick="document.getElementById('videoInput').click();">
+            <i class="fa-solid fa-upload"></i>
+            <p id="click"><u>Click to Upload</u></p>
+        </div>
+        
+        <!-- Hidden Input -->
+        <input type="file" id="videoInput" accept="video/*" style="display: none;">
+        
+        <!-- File Name Display (Hidden Initially) -->
+        <p id="fileName" style="display: none; cursor: pointer; color: blue;"></p>
+        
+        <!-- Video Preview (Hidden Initially) -->
+        <video id="videoPreview" style="display: none; width: 300px;" controls></video>
+    </div>
+
+    <div class="button">
+        <button onclick="uploadVideo()">Upload Video</button>
+    </div>
+
+    <script>
+       
+        document.getElementById('videoInput').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        const uploadIcon = document.querySelector('.upload-icon');
+        const fileNameElement = document.getElementById('fileName');
+        const videoElement = document.getElementById('videoPreview');
+
+        if (file) {
+            const url = URL.createObjectURL(file);
+            videoElement.src = url;
+            videoElement.style.display = 'none';
+
+            videoElement.onloadedmetadata = function() {
+                if (videoElement.duration > 30) {
+                    alert("Video must be 30 seconds or less.");
+                    document.getElementById('videoInput').value = ""; // Reset input
+                    uploadIcon.style.display = 'flex'; // Show upload icon
+                    fileNameElement.style.display = 'none'; // Hide file name
+                } 
+                else {
+                    uploadIcon.style.display = 'none'; // Hide upload icon
+                    fileNameElement.textContent = file.name; // Show file name
+                    fileNameElement.style.display = 'block';
+                }
+            };
+        }
+    });
+
+
+    // Clicking File Name Lets User Re-upload
+    document.getElementById('fileName').addEventListener('click', function() {
+        document.getElementById('videoInput').click();
+    });
+
+    function uploadVideo() {
+        const fileInput = document.getElementById('videoInput');
+        if (fileInput.files.length === 0) {
+            alert("Please select a video file.");
+            return;
+        }
+        
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append("video", file);
+        
+        fetch("upload.php", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.text())
+        .then(result => alert(result))
+        .catch(error => alert("Error uploading video"));
+    }
+    </script>
+</body>
+</html>
